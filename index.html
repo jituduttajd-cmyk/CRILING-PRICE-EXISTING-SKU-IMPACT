@@ -1,1 +1,3616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#062b63">
 
+<title>Ceiling Price Data Compare</title>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+    --navy:#062b63;
+    --navy2:#0b3f8e;
+    --blue:#1558a6;
+    --line:#dce3ec;
+    --text:#172033;
+    --muted:#667085;
+    --red:#dc2626;
+    --green:#15803d;
+    --orange:#d97706;
+    --bg:#f5f7fb;
+    --white:#fff;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Cambria,Georgia,serif;
+}
+
+button,input,select{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* ================= HEADER ================= */
+
+.top{
+    background:linear-gradient(135deg,#062b63,#073b82);
+    color:#fff;
+    padding:13px 20px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.logo{
+    width:45px;
+    height:45px;
+    background:#fff;
+    color:#168346;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:31px;
+    font-weight:bold;
+}
+
+.topTitle h1{
+    margin:0;
+    font-size:23px;
+    line-height:1.1;
+}
+
+.topTitle p{
+    margin:4px 0 0;
+    font-size:13px;
+}
+
+.spacer{
+    flex:1;
+}
+
+.pwa{
+    background:#1769d1;
+    border-radius:12px;
+    padding:7px 14px;
+    font-weight:bold;
+}
+
+/* ================= MAIN ================= */
+
+.wrap{
+    max-width:1900px;
+    margin:auto;
+    padding:12px;
+}
+
+.grid3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.05fr;
+    gap:12px;
+}
+
+.card,.panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:0 1px 3px #00000008;
+}
+
+.card{
+    padding:14px;
+}
+
+.card h2{
+    margin:0 0 10px;
+    color:#0b3f8e;
+    font-size:17px;
+}
+
+.panel{
+    padding:13px;
+}
+
+/* ================= FILE ================= */
+
+.filebox{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:11px;
+    min-height:125px;
+}
+
+.fileline{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.xlsx{
+    font-size:34px;
+    color:#18864b;
+}
+
+.fileName{
+    font-weight:bold;
+}
+
+.fileInfo{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+}
+
+.okIcon{
+    color:var(--green);
+    font-size:18px;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+
+.btn{
+    border:1px solid #b9c5d5;
+    background:#fff;
+    color:#172033;
+    padding:8px 13px;
+    border-radius:6px;
+    font-size:13px;
+}
+
+.primary{
+    background:var(--navy);
+    color:#fff;
+    border-color:var(--navy);
+    font-weight:bold;
+}
+
+/* ================= SUMMARY ================= */
+
+.summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+.metric{
+    text-align:center;
+    padding:10px 5px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:13px;
+}
+
+.metric b{
+    display:block;
+    font-size:26px;
+    margin-top:4px;
+}
+
+.metric.red{
+    color:var(--red);
+    background:#fff8f8;
+    border-color:#fecaca;
+}
+
+.metric.green{
+    color:var(--green);
+    background:#f5fff7;
+    border-color:#bbebc9;
+}
+
+.metric.orange{
+    color:var(--orange);
+    background:#fffaf1;
+    border-color:#f5d59a;
+}
+
+.metric.blue{
+    color:#123f89;
+    background:#f5f8ff;
+    border-color:#c8d8f7;
+}
+
+/* ================= CONTROLS ================= */
+
+.controls{
+    display:flex;
+    gap:10px;
+    align-items:end;
+    flex-wrap:wrap;
+}
+
+.control{
+    min-width:190px;
+}
+
+.control label{
+    display:block;
+    font-weight:bold;
+    font-size:13px;
+    margin-bottom:5px;
+}
+
+.control select{
+    width:100%;
+    padding:8px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    background:#fff;
+}
+
+.matchInfo{
+    flex:1;
+    min-width:500px;
+    border:1px solid var(--line);
+    background:#f8fafc;
+    border-radius:6px;
+    padding:9px 12px;
+    font-size:12px;
+    line-height:1.55;
+}
+
+.matchInfo b{
+    color:#073d8b;
+}
+
+/* ================= TABS ================= */
+
+.tabs{
+    display:flex;
+    border-bottom:1px solid var(--line);
+    overflow-x:auto;
+}
+
+.tab{
+    border:0;
+    background:#fff;
+    padding:11px 17px;
+    white-space:nowrap;
+    font-size:13px;
+}
+
+.tab.active{
+    color:#073d8b;
+    font-weight:bold;
+    border-bottom:3px solid #073d8b;
+}
+
+/* ================= RESULT ================= */
+
+.resultArea{
+    padding:12px;
+}
+
+.resultHead{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.resultHead h2{
+    flex:1;
+    margin:0;
+    font-size:18px;
+    color:#073d8b;
+}
+
+.search{
+    min-width:330px;
+    padding:8px 10px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+}
+
+/* ================= TABLE ================= */
+
+.tableWrap{
+    overflow:auto;
+    margin-top:10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+}
+
+.data{
+    width:100%;
+    min-width:1950px;
+    border-collapse:collapse;
+    font-size:12.5px;
+}
+
+.data th,.data td{
+    border:1px solid #e1e6ed;
+    padding:7px 8px;
+}
+
+.data th{
+    background:#f1f4f8;
+    text-align:center;
+    white-space:nowrap;
+    font-weight:bold;
+}
+
+.data td{
+    white-space:nowrap;
+}
+
+.center{
+    text-align:center;
+}
+
+.right{
+    text-align:right;
+}
+
+.negative{
+    color:var(--red);
+}
+
+.positive{
+    color:var(--green);
+}
+
+.status{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:5px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.status.impacted{
+    background:#fee8e8;
+    color:var(--red);
+}
+
+.status.notimpacted{
+    background:#e8f7ed;
+    color:var(--green);
+}
+
+.status.unmatched{
+    background:#fff2d8;
+    color:var(--orange);
+}
+
+/* ================= PAGINATION ================= */
+
+.pagination{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:9px;
+}
+
+.pages{
+    display:flex;
+    gap:5px;
+}
+
+.pages button{
+    min-width:30px;
+    padding:5px 8px;
+    border:1px solid #cbd5e1;
+    background:#fff;
+    border-radius:5px;
+}
+
+.pages button.active{
+    background:var(--navy);
+    color:#fff;
+}
+
+/* ================= NOTE ================= */
+
+.note{
+    margin-top:11px;
+    padding:10px 12px;
+    background:#fff8e8;
+    border:1px solid #f1d18a;
+    border-radius:6px;
+    font-size:12.5px;
+    line-height:1.55;
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-top:11px;
+    color:#667085;
+    font-size:13px;
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:#0008;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+}
+
+.modal.hidden{
+    display:none;
+}
+
+.modalBox{
+    width:100%;
+    max-width:1450px;
+    max-height:88vh;
+    overflow:auto;
+    background:#fff;
+    border-radius:10px;
+    padding:15px;
+}
+
+.modalHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.modalHead h3{
+    margin:0;
+    color:#073d8b;
+}
+
+.previewTable{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:12px;
+}
+
+.previewTable th,
+.previewTable td{
+    border:1px solid #dce3ec;
+    padding:6px;
+}
+
+.previewTable th{
+    background:#f1f4f8;
+    white-space:nowrap;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:1100px){
+
+    .grid3{
+        grid-template-columns:1fr;
+    }
+
+    .summary{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+
+@media(max-width:700px){
+
+    .top{
+        padding:10px;
+    }
+
+    .logo{
+        width:38px;
+        height:38px;
+        font-size:25px;
+    }
+
+    .topTitle h1{
+        font-size:18px;
+    }
+
+    .topTitle p{
+        display:none;
+    }
+
+    .wrap{
+        padding:7px;
+    }
+
+    .summary{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .control,
+    .matchInfo{
+        min-width:100%;
+    }
+
+    .search{
+        width:100%;
+        min-width:100%;
+    }
+
+    .resultHead h2{
+        width:100%;
+        flex:none;
+    }
+
+    .footer{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .footer .btn{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="top">
+
+    <div class="logo">▦</div>
+
+    <div class="topTitle">
+
+        <h1>Ceiling Price Data Compare</h1>
+
+        <p>
+            Compare Product-Formulation-MRP with Ceiling Price Data
+        </p>
+
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="pwa">
+        PWA
+    </div>
+
+</header>
+
+
+<main class="wrap">
+
+<!-- =====================================================
+     UPLOAD FILES
+===================================================== -->
+
+<section class="grid3">
+
+    <div class="card">
+
+        <h2>
+            1. Upload Ceiling Price Data
+        </h2>
+
+        <input
+            id="ceilingFile"
+            type="file"
+            accept=".xlsx,.xls"
+            hidden
+        >
+
+        <div class="filebox">
+
+            <div class="fileline">
+
+                <div class="xlsx">▦</div>
+
+                <div style="flex:1">
+
+                    <div
+                        class="fileName"
+                        id="ceilingName"
+                    >
+                        No file selected
+                    </div>
+
+                    <div
+                        class="fileInfo"
+                        id="ceilingInfo"
+                    >
+                        Medicines |
+                        Dosage form and strength |
+                        Unit |
+                        Ceiling Price
+                    </div>
+
+                </div>
+
+                <div id="ceilingOk"></div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="btn"
+                    onclick="document.getElementById('ceilingFile').click()"
+                >
+                    Choose File
+                </button>
+
+                <button
+                    class="btn"
+                    id="ceilingPreview"
+                    disabled
+                >
+                    Preview Data
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            2. Upload Product-Formulation-MRP
+        </h2>
+
+        <input
+            id="productFile"
+            type="file"
+            accept=".xlsx,.xls"
+            hidden
+        >
+
+        <div class="filebox">
+
+            <div class="fileline">
+
+                <div class="xlsx">▦</div>
+
+                <div style="flex:1">
+
+                    <div
+                        class="fileName"
+                        id="productName"
+                    >
+                        No file selected
+                    </div>
+
+                    <div
+                        class="fileInfo"
+                        id="productInfo"
+                    >
+                        Material Code |
+                        Product Name |
+                        Pack Size |
+                        Medicines |
+                        Dosage form and strength |
+                        Unit |
+                        Formulation |
+                        MRP |
+                        GST%
+                    </div>
+
+                </div>
+
+                <div id="productOk"></div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="btn"
+                    onclick="document.getElementById('productFile').click()"
+                >
+                    Choose File
+                </button>
+
+                <button
+                    class="btn"
+                    id="productPreview"
+                    disabled
+                >
+                    Preview Data
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            Comparison Summary
+        </h2>
+
+        <div class="summary">
+
+            <div class="metric red">
+                Impacted Products
+                <b id="mImp">0</b>
+            </div>
+
+            <div class="metric green">
+                Not Impacted
+                <b id="mOk">0</b>
+            </div>
+
+            <div class="metric orange">
+                Unmatched
+                <b id="mUn">0</b>
+            </div>
+
+            <div class="metric blue">
+                Total Products
+                <b id="mTotal">0</b>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CONTROLS
+===================================================== -->
+
+<section
+    class="panel"
+    style="margin-top:12px"
+>
+
+    <div class="controls">
+
+        <div class="control">
+
+            <label>
+                Rounding
+            </label>
+
+            <select id="rounding">
+
+                <option value="2">
+                    2 Decimal Places
+                </option>
+
+                <option value="1">
+                    1 Decimal Place
+                </option>
+
+                <option value="0">
+                    No Decimal
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="matchInfo">
+
+            <b>New 3-Column Matching Logic</b>
+
+            <br>
+
+            <b>Medicines</b>
+            ↔
+            <b>Medicines</b>
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <b>Dosage form and strength</b>
+            ↔
+            <b>Dosage form and strength</b>
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <b>Unit</b>
+            ↔
+            <b>Unit</b>
+
+            <br>
+
+            The three fields from
+            <b>Product-Formulation-MRP</b>
+            are now the primary reference.
+            Product Name and Formulation remain available for display/reference only.
+
+        </div>
+
+
+        <button
+            class="btn primary"
+            onclick="compareData()"
+        >
+            🔍 Compare Data
+        </button>
+
+
+        <button
+            class="btn"
+            onclick="resetAll()"
+        >
+            ↻ Reset
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RESULTS
+===================================================== -->
+
+<section
+    class="panel"
+    style="margin-top:12px;padding:0"
+>
+
+    <div class="tabs">
+
+        <button
+            class="tab active"
+            data-tab="all"
+        >
+            Comparison Summary
+        </button>
+
+        <button
+            class="tab"
+            data-tab="impacted"
+        >
+            Impacted
+        </button>
+
+        <button
+            class="tab"
+            data-tab="ok"
+        >
+            Not Impacted
+        </button>
+
+        <button
+            class="tab"
+            data-tab="unmatched"
+        >
+            Unmatched
+        </button>
+
+        <button
+            class="tab"
+            data-tab="proposed"
+        >
+            Proposed MRP
+        </button>
+
+    </div>
+
+
+    <div class="resultArea">
+
+        <div class="resultHead">
+
+            <h2 id="resultTitle">
+                Comparison Results
+            </h2>
+
+            <input
+                id="search"
+                class="search"
+                placeholder="Search Material Code, Product, Medicine..."
+            >
+
+            <button
+                class="btn"
+                onclick="exportCurrent()"
+            >
+                ▣ Export to Excel
+            </button>
+
+        </div>
+
+
+        <div class="tableWrap">
+
+            <table class="data">
+
+                <thead id="thead"></thead>
+
+                <tbody id="tbody"></tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="pagination">
+
+            <span id="countText">
+                No data
+            </span>
+
+            <div
+                class="pages"
+                id="pages"
+            ></div>
+
+        </div>
+
+
+        <div class="note">
+
+            <b>Comparison sequence:</b>
+
+            <br>
+
+            <b>1.</b>
+            Product-Formulation-MRP
+            <b>Medicines</b>
+            ↔
+            Ceiling Price Data
+            <b>Medicines</b>
+
+            <br>
+
+            <b>2.</b>
+            Product-Formulation-MRP
+            <b>Dosage form and strength</b>
+            ↔
+            Ceiling Price Data
+            <b>Dosage form and strength</b>
+
+            <br>
+
+            <b>3.</b>
+            Product-Formulation-MRP
+            <b>Unit</b>
+            ↔
+            Ceiling Price Data
+            <b>Unit</b>
+
+            <br><br>
+
+            <b>MRP as per Ceiling Price</b>
+            =
+            Ceiling Price × Pack Size ×
+            (1 + GST% / 100)
+
+            <br>
+
+            <b>MRP as per WPI</b>
+            =
+            Existing MRP excluding GST
+            × (1 + WPI% / 100)
+            × (1 + GST% / 100)
+
+            <br>
+
+            <b>Proposed MRP</b>
+            =
+            Lowest of
+            MRP as per Ceiling Price
+            and
+            MRP as per WPI.
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<div class="footer">
+
+    <span>
+        © 2026 Ceiling Price Data Compare | PWA Application
+    </span>
+
+    <div class="actions">
+
+        <button
+            class="btn primary"
+            onclick="downloadFullReport()"
+        >
+            ⇩ Download Full Report (Excel)
+        </button>
+
+        <button
+            class="btn"
+            onclick="resetAll()"
+        >
+            Clear All Data
+        </button>
+
+    </div>
+
+</div>
+
+</main>
+
+
+<!-- =====================================================
+     PREVIEW MODAL
+===================================================== -->
+
+<div
+    id="modal"
+    class="modal hidden"
+>
+
+    <div class="modalBox">
+
+        <div class="modalHead">
+
+            <h3 id="modalTitle">
+                Preview
+            </h3>
+
+            <button
+                class="btn"
+                onclick="closeModal()"
+            >
+                Close
+            </button>
+
+        </div>
+
+        <div id="modalBody"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let ceilingRows = [];
+let productRows = [];
+let results = [];
+
+let ceilingWPI = 0;
+
+let activeTab = "all";
+let page = 1;
+
+const pageSize = 10;
+
+
+/* =====================================================
+   BASIC HELPERS
+===================================================== */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function norm(value){
+
+    return String(value ?? "")
+        .toLowerCase()
+        .replace(/[™®©]/g,"")
+        .replace(/[\r\n]+/g," ")
+        .replace(/[,:;()[\]{}]/g," ")
+        .replace(/[-–—]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+}
+
+
+function numericText(value){
+
+    return String(value ?? "")
+        .replace(/,/g,"")
+        .replace(/[^\d.-]/g,"");
+
+}
+
+
+function num(value){
+
+    if(typeof value === "number"){
+        return value;
+    }
+
+    return parseFloat(
+        numericText(value)
+    ) || 0;
+
+}
+
+
+function round(value,decimals){
+
+    const factor =
+        Math.pow(10,decimals);
+
+    return Math.round(
+        (value + Number.EPSILON) *
+        factor
+    ) / factor;
+
+}
+
+
+function money(value,decimals){
+
+    return Number(value || 0)
+        .toLocaleString(
+            "en-IN",
+            {
+                minimumFractionDigits:decimals,
+                maximumFractionDigits:decimals
+            }
+        );
+
+}
+
+
+function esc(value){
+
+    return String(value ?? "")
+        .replace(
+            /[&<>"']/g,
+            c => ({
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#39;"
+            }[c])
+        );
+
+}
+
+
+/* =====================================================
+   HEADER FIND
+===================================================== */
+
+function findHeader(row,names){
+
+    const keys =
+        Object.keys(row || {});
+
+
+    for(const requested of names){
+
+        const exact =
+            keys.find(
+                key =>
+                    norm(key) ===
+                    norm(requested)
+            );
+
+        if(exact){
+            return exact;
+        }
+
+    }
+
+
+    for(const requested of names){
+
+        const partial =
+            keys.find(
+                key =>
+                    norm(key)
+                    .includes(
+                        norm(requested)
+                    )
+            );
+
+        if(partial){
+            return partial;
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =====================================================
+   FIELD MAP
+===================================================== */
+
+function getCeilingFields(){
+
+    const row =
+        ceilingRows[0] || {};
+
+    return {
+
+        medicine:
+            findHeader(
+                row,
+                [
+                    "Medicines",
+                    "Medicine"
+                ]
+            ),
+
+        dosage:
+            findHeader(
+                row,
+                [
+                    "Dosage form and strength",
+                    "Dosage Form and Strength",
+                    "Dosage Form & Strength"
+                ]
+            ),
+
+        unit:
+            findHeader(
+                row,
+                [
+                    "Unit"
+                ]
+            ),
+
+        price:
+            findHeader(
+                row,
+                [
+                    "Ceiling price",
+                    "Ceiling Price"
+                ]
+            )
+
+    };
+
+}
+
+
+function getProductFields(){
+
+    const row =
+        productRows[0] || {};
+
+    return {
+
+        code:
+            findHeader(
+                row,
+                [
+                    "Material Code"
+                ]
+            ),
+
+        name:
+            findHeader(
+                row,
+                [
+                    "Product Name"
+                ]
+            ),
+
+        pack:
+            findHeader(
+                row,
+                [
+                    "Pack Size"
+                ]
+            ),
+
+        formulation:
+            findHeader(
+                row,
+                [
+                    "Formulation"
+                ]
+            ),
+
+        medicine:
+            findHeader(
+                row,
+                [
+                    "Medicines",
+                    "Medicine"
+                ]
+            ),
+
+        dosage:
+            findHeader(
+                row,
+                [
+                    "Dosage form and strength",
+                    "Dosage Form and Strength",
+                    "Dosage Form & Strength"
+                ]
+            ),
+
+        unit:
+            findHeader(
+                row,
+                [
+                    "Unit"
+                ]
+            ),
+
+        mrp:
+            findHeader(
+                row,
+                [
+                    "MRP"
+                ]
+            ),
+
+        gst:
+            findHeader(
+                row,
+                [
+                    "GST%",
+                    "GST %",
+                    "GST"
+                ]
+            )
+
+    };
+
+}
+
+
+/* =====================================================
+   NORMALIZED EXACT MATCH
+===================================================== */
+
+function exactMatch(a,b){
+
+    const x =
+        norm(a);
+
+    const y =
+        norm(b);
+
+    return (
+        x !== "" &&
+        y !== "" &&
+        x === y
+    );
+
+}
+
+
+/* =====================================================
+   MEDICINE MATCH
+===================================================== */
+
+function medicineMatch(a,b){
+
+    return exactMatch(a,b);
+
+}
+
+
+/* =====================================================
+   UNIT MATCH
+===================================================== */
+
+function unitMatch(a,b){
+
+    const x =
+        norm(a)
+        .replace(
+            /\bunit\b/g,
+            ""
+        )
+        .trim();
+
+    const y =
+        norm(b)
+        .replace(
+            /\bunit\b/g,
+            ""
+        )
+        .trim();
+
+    return (
+        x !== "" &&
+        y !== "" &&
+        x === y
+    );
+
+}
+
+
+/* =====================================================
+   STRENGTH / DOSAGE MATCH
+===================================================== */
+
+function extractStrengths(text){
+
+    const s =
+        norm(text);
+
+
+    const regex =
+        /(\d+(?:\.\d+)?)\s*(mg|mcg|µg|ug|g|kg|ml|l|iu|%|units?)\b/gi;
+
+
+    const result = [];
+
+    let match;
+
+
+    while(
+        (match = regex.exec(s)) !== null
+    ){
+
+        result.push({
+
+            value:
+                Number(match[1]),
+
+            unit:
+                match[2]
+                    .toLowerCase()
+                    .replace("µ","u")
+                    .replace(
+                        "units",
+                        "unit"
+                    )
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+function normalizedStrength(value,unit){
+
+    let n =
+        Number(value);
+
+    let u =
+        String(unit)
+        .toLowerCase();
+
+
+    if(
+        u === "mcg" ||
+        u === "ug"
+    ){
+
+        n = n / 1000;
+        u = "mg";
+
+    }
+
+
+    if(u === "g"){
+
+        n = n * 1000;
+        u = "mg";
+
+    }
+
+
+    if(u === "kg"){
+
+        n = n * 1000000;
+        u = "mg";
+
+    }
+
+
+    if(u === "l"){
+
+        n = n * 1000;
+        u = "ml";
+
+    }
+
+
+    return {
+        value:n,
+        unit:u
+    };
+
+}
+
+
+function strengthMatch(a,b){
+
+    const aa =
+        extractStrengths(a);
+
+    const bb =
+        extractStrengths(b);
+
+
+    /*
+       If both have no numeric strength,
+       compare normalized text.
+    */
+
+    if(
+        !aa.length &&
+        !bb.length
+    ){
+
+        return exactMatch(a,b);
+
+    }
+
+
+    if(
+        !aa.length ||
+        !bb.length
+    ){
+
+        return false;
+
+    }
+
+
+    for(const x of aa){
+
+        const nx =
+            normalizedStrength(
+                x.value,
+                x.unit
+            );
+
+
+        for(const y of bb){
+
+            const ny =
+                normalizedStrength(
+                    y.value,
+                    y.unit
+                );
+
+
+            if(
+                nx.unit === ny.unit &&
+                Math.abs(
+                    nx.value -
+                    ny.value
+                ) < 0.000001
+            ){
+
+                return true;
+
+            }
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
+   DOSAGE FORM / STRENGTH COMPARISON
+===================================================== */
+
+function dosageStrengthMatch(
+    productValue,
+    ceilingValue
+){
+
+    const p =
+        norm(productValue);
+
+    const c =
+        norm(ceilingValue);
+
+
+    if(!p || !c){
+        return false;
+    }
+
+
+    /*
+       First try exact normalized match.
+    */
+
+    if(p === c){
+        return true;
+    }
+
+
+    /*
+       Strength must match.
+    */
+
+    if(
+        !strengthMatch(
+            productValue,
+            ceilingValue
+        )
+    ){
+
+        return false;
+
+    }
+
+
+    /*
+       Remove strength numbers and units
+       and compare remaining dosage form.
+    */
+
+    const removeStrength =
+        text =>
+            norm(text)
+            .replace(
+                /\d+(?:\.\d+)?\s*(mg|mcg|µg|ug|g|kg|ml|l|iu|%|units?)\b/gi,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    const pd =
+        removeStrength(
+            productValue
+        );
+
+    const cd =
+        removeStrength(
+            ceilingValue
+        );
+
+
+    if(pd === cd){
+        return true;
+    }
+
+
+    /*
+       Dosage form may appear with
+       slightly different ordering.
+    */
+
+    const pTokens =
+        pd.split(" ")
+        .filter(Boolean);
+
+    const cTokens =
+        cd.split(" ")
+        .filter(Boolean);
+
+
+    if(
+        !pTokens.length ||
+        !cTokens.length
+    ){
+
+        return false;
+
+    }
+
+
+    return pTokens.every(
+        token =>
+            cTokens.includes(token)
+    );
+
+}
+
+
+/* =====================================================
+   PACK SIZE
+===================================================== */
+
+function parsePack(value){
+
+    const s =
+        String(value ?? "")
+        .toLowerCase()
+        .replace(/,/g,"")
+        .trim();
+
+
+    /*
+       10 x 10
+    */
+
+    const multi =
+        s.match(
+            /(\d+(?:\.\d+)?)\s*(?:x|\*|×)\s*(\d+(?:\.\d+)?)/
+        );
+
+
+    if(multi){
+
+        return (
+            Number(multi[1]) *
+            Number(multi[2])
+        );
+
+    }
+
+
+    /*
+       Normal numeric pack
+    */
+
+    const single =
+        s.match(
+            /(\d+(?:\.\d+)?)/
+        );
+
+
+    return single
+        ? Number(single[1])
+        : 1;
+
+}
+
+
+/* =====================================================
+   CEILING PRICE MRP
+===================================================== */
+
+function calculateCeilingMRP(
+    ceilingPrice,
+    productPack,
+    gst,
+    decimals
+){
+
+    const cp =
+        num(ceilingPrice);
+
+    const pack =
+        parsePack(productPack);
+
+    const gstRate =
+        num(gst);
+
+
+    /*
+       Existing logic:
+
+       Ceiling Price × Pack Size
+       + GST
+
+       Mathematically:
+       CP × Pack × (1 + GST/100)
+    */
+
+    const value =
+        cp *
+        pack *
+        (
+            1 +
+            gstRate / 100
+        );
+
+
+    return round(
+        value,
+        decimals
+    );
+
+}
+
+
+/* =====================================================
+   WPI MRP
+===================================================== */
+
+function calculateWPIMRP(
+    existingMRP,
+    gst,
+    decimals
+){
+
+    const mrp =
+        num(existingMRP);
+
+    const gstRate =
+        num(gst);
+
+
+    /*
+       Remove GST
+    */
+
+    const basic =
+        mrp /
+        (
+            1 +
+            gstRate / 100
+        );
+
+
+    /*
+       Apply WPI
+    */
+
+    const revisedBasic =
+        basic *
+        (
+            1 +
+            ceilingWPI / 100
+        );
+
+
+    /*
+       Re-add GST
+    */
+
+    const revisedMRP =
+        revisedBasic *
+        (
+            1 +
+            gstRate / 100
+        );
+
+
+    return round(
+        revisedMRP,
+        decimals
+    );
+
+}
+
+
+/* =====================================================
+   FIND MATCH
+===================================================== */
+
+function findCeilingRecord(
+    product,
+    cf,
+    pf
+){
+
+    const productMedicine =
+        product[pf.medicine];
+
+
+    const productDosage =
+        product[pf.dosage];
+
+
+    const productUnit =
+        product[pf.unit];
+
+
+    /*
+       NEW PRIMARY LOGIC
+
+       1. Medicines
+       2. Dosage form and strength
+       3. Unit
+
+       ALL THREE MUST MATCH.
+    */
+
+    for(
+        const ceiling of ceilingRows
+    ){
+
+        const medicine =
+            ceiling[cf.medicine];
+
+        const dosage =
+            ceiling[cf.dosage];
+
+        const unit =
+            ceiling[cf.unit];
+
+
+        const medicineOK =
+            medicineMatch(
+                productMedicine,
+                medicine
+            );
+
+
+        if(!medicineOK){
+            continue;
+        }
+
+
+        const dosageOK =
+            dosageStrengthMatch(
+                productDosage,
+                dosage
+            );
+
+
+        if(!dosageOK){
+            continue;
+        }
+
+
+        const unitOK =
+            unitMatch(
+                productUnit,
+                unit
+            );
+
+
+        if(!unitOK){
+            continue;
+        }
+
+
+        return {
+
+            row:ceiling,
+
+            medicineOK:true,
+
+            dosageOK:true,
+
+            unitOK:true,
+
+            matchType:
+                "3-Column Exact Match"
+
+        };
+
+    }
+
+
+    /*
+       No partial/random match.
+
+       This is intentional.
+    */
+
+    return {
+
+        row:null,
+
+        medicineOK:false,
+
+        dosageOK:false,
+
+        unitOK:false,
+
+        matchType:
+            "Unmatched"
+
+    };
+
+}
+
+
+/* =====================================================
+   COMPARE
+===================================================== */
+
+function compareData(){
+
+    if(
+        !ceilingRows.length ||
+        !productRows.length
+    ){
+
+        alert(
+            "Please upload both Excel files first."
+        );
+
+        return;
+
+    }
+
+
+    const cf =
+        getCeilingFields();
+
+    const pf =
+        getProductFields();
+
+
+    /*
+       Required Ceiling fields
+    */
+
+    if(
+        !cf.medicine ||
+        !cf.dosage ||
+        !cf.unit ||
+        !cf.price
+    ){
+
+        alert(
+            "Required Ceiling Price Data headings were not found.\n\n" +
+            "Required:\n" +
+            "Medicines\n" +
+            "Dosage form and strength\n" +
+            "Unit\n" +
+            "Ceiling Price"
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Required Product fields
+    */
+
+    if(
+        !pf.code ||
+        !pf.name ||
+        !pf.pack ||
+        !pf.medicine ||
+        !pf.dosage ||
+        !pf.unit ||
+        !pf.mrp ||
+        !pf.gst
+    ){
+
+        alert(
+            "Required Product-Formulation-MRP headings were not found.\n\n" +
+            "Required:\n" +
+            "Material Code\n" +
+            "Product Name\n" +
+            "Pack Size\n" +
+            "Medicines\n" +
+            "Dosage form and strength\n" +
+            "Unit\n" +
+            "MRP\n" +
+            "GST%"
+        );
+
+        return;
+
+    }
+
+
+    const decimals =
+        Number(
+            $("rounding").value
+        );
+
+
+    results =
+        productRows.map(
+            (product,index) => {
+
+                const match =
+                    findCeilingRecord(
+                        product,
+                        cf,
+                        pf
+                    );
+
+
+                const ceiling =
+                    match.row;
+
+
+                const existingMRP =
+                    num(
+                        product[pf.mrp]
+                    );
+
+
+                const gst =
+                    num(
+                        product[pf.gst]
+                    );
+
+
+                /*
+                   MRP as per WPI
+                */
+
+                const mrpWPI =
+                    calculateWPIMRP(
+                        existingMRP,
+                        gst,
+                        decimals
+                    );
+
+
+                let ceilingMRP = 0;
+                let proposedMRP = 0;
+                let difference = 0;
+                let differencePct = 0;
+                let status = "Unmatched";
+
+
+                if(ceiling){
+
+                    ceilingMRP =
+                        calculateCeilingMRP(
+                            ceiling[cf.price],
+                            product[pf.pack],
+                            gst,
+                            decimals
+                        );
+
+
+                    /*
+                       Proposed MRP =
+                       lowest of Ceiling
+                       and WPI
+                    */
+
+                    proposedMRP =
+                        round(
+                            Math.min(
+                                ceilingMRP,
+                                mrpWPI
+                            ),
+                            decimals
+                        );
+
+
+                    difference =
+                        round(
+                            proposedMRP -
+                            existingMRP,
+                            decimals
+                        );
+
+
+                    differencePct =
+                        existingMRP !== 0
+                        ? round(
+                            (
+                                difference /
+                                existingMRP
+                            ) * 100,
+                            2
+                        )
+                        : 0;
+
+
+                    status =
+                        proposedMRP <
+                        existingMRP
+                        ? "Impacted"
+                        : "Not Impacted";
+
+                }
+
+
+                return {
+
+                    sr:
+                        index + 1,
+
+                    code:
+                        product[pf.code] ?? "",
+
+                    product:
+                        product[pf.name] ?? "",
+
+                    pack:
+                        product[pf.pack] ?? "",
+
+                    drug:
+                        product[pf.medicine] ?? "",
+
+                    dosage:
+                        product[pf.dosage] ?? "",
+
+                    unit:
+                        product[pf.unit] ?? "",
+
+                    gst,
+
+                    wpi:
+                        ceilingWPI,
+
+                    existing:
+                        existingMRP,
+
+                    ceiling:
+                        ceiling
+                        ? num(
+                            ceiling[cf.price]
+                        )
+                        : 0,
+
+                    proposed:
+                        proposedMRP,
+
+                    difference,
+
+                    differencePct,
+
+                    status,
+
+                    matchType:
+                        match.matchType,
+
+                    mrpWPI,
+
+                    mrpCeiling:
+                        ceilingMRP
+
+                };
+
+            }
+        );
+
+
+    updateSummary();
+
+    page = 1;
+
+    render();
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+function updateSummary(){
+
+    $("mImp").textContent =
+        results.filter(
+            x =>
+                x.status ===
+                "Impacted"
+        ).length;
+
+
+    $("mOk").textContent =
+        results.filter(
+            x =>
+                x.status ===
+                "Not Impacted"
+        ).length;
+
+
+    $("mUn").textContent =
+        results.filter(
+            x =>
+                x.status ===
+                "Unmatched"
+        ).length;
+
+
+    $("mTotal").textContent =
+        results.length;
+
+}
+
+
+/* =====================================================
+   TABLE COLUMNS
+===================================================== */
+
+const columns = [
+
+    ["sr","Sr. No."],
+    ["code","Material Code"],
+    ["product","Product Name"],
+    ["pack","Pack Size"],
+    ["drug","Drug Name"],
+    ["dosage","Dosage Form & Strength"],
+    ["unit","Unit"],
+    ["gst","GST%"],
+    ["wpi","WPI%"],
+    ["existing","Existing MRP"],
+    ["ceiling","Ceiling Price"],
+    ["proposed","Proposed MRP"],
+    ["difference","Difference ₹"],
+    ["differencePct","Difference %"],
+    ["status","Status"]
+
+];
+
+
+/* =====================================================
+   FILTER
+===================================================== */
+
+function getFiltered(){
+
+    let data =
+        [...results];
+
+
+    if(activeTab === "impacted"){
+
+        data =
+            data.filter(
+                x =>
+                    x.status ===
+                    "Impacted"
+            );
+
+    }
+
+
+    if(activeTab === "ok"){
+
+        data =
+            data.filter(
+                x =>
+                    x.status ===
+                    "Not Impacted"
+            );
+
+    }
+
+
+    if(activeTab === "unmatched"){
+
+        data =
+            data.filter(
+                x =>
+                    x.status ===
+                    "Unmatched"
+            );
+
+    }
+
+
+    if(activeTab === "proposed"){
+
+        data =
+            data.filter(
+                x =>
+                    x.status !==
+                    "Unmatched"
+            );
+
+    }
+
+
+    const q =
+        norm(
+            $("search").value
+        );
+
+
+    if(q){
+
+        data =
+            data.filter(
+                x =>
+                    [
+                        x.code,
+                        x.product,
+                        x.pack,
+                        x.drug,
+                        x.dosage,
+                        x.unit
+                    ]
+                    .some(
+                        value =>
+                            norm(value)
+                            .includes(q)
+                    )
+            );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function render(){
+
+    const data =
+        getFiltered();
+
+
+    const decimals =
+        Number(
+            $("rounding").value
+        );
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                data.length /
+                pageSize
+            )
+        );
+
+
+    if(page > totalPages){
+        page = totalPages;
+    }
+
+
+    const start =
+        (page - 1) *
+        pageSize;
+
+
+    const rows =
+        data.slice(
+            start,
+            start + pageSize
+        );
+
+
+    $("thead").innerHTML =
+        "<tr>" +
+        columns
+            .map(
+                c =>
+                    `<th>${c[1]}</th>`
+            )
+            .join("") +
+        "</tr>";
+
+
+    $("tbody").innerHTML =
+        rows
+        .map(
+            x => `
+
+<tr>
+
+<td class="center">
+${x.sr}
+</td>
+
+<td>
+${esc(x.code)}
+</td>
+
+<td>
+${esc(x.product)}
+</td>
+
+<td>
+${esc(x.pack)}
+</td>
+
+<td>
+${esc(x.drug)}
+</td>
+
+<td>
+${esc(x.dosage)}
+</td>
+
+<td>
+${esc(x.unit)}
+</td>
+
+<td class="center">
+${x.gst}%
+</td>
+
+<td class="center">
+${x.wpi}%
+</td>
+
+<td class="right">
+₹ ${money(
+    x.existing,
+    decimals
+)}
+</td>
+
+<td class="right">
+₹ ${money(
+    x.ceiling,
+    decimals
+)}
+</td>
+
+<td class="right">
+
+${
+    x.status === "Unmatched"
+    ? "—"
+    : `<b>₹ ${money(
+        x.proposed,
+        decimals
+    )}</b>`
+}
+
+</td>
+
+<td class="right ${
+    x.difference < 0
+    ? "negative"
+    : "positive"
+}">
+
+${
+    x.status === "Unmatched"
+    ? "—"
+    : "₹ " +
+      money(
+          x.difference,
+          decimals
+      )
+}
+
+</td>
+
+<td class="right ${
+    x.differencePct < 0
+    ? "negative"
+    : "positive"
+}">
+
+${
+    x.status === "Unmatched"
+    ? "—"
+    : money(
+        x.differencePct,
+        2
+      ) + "%"
+}
+
+</td>
+
+<td class="center">
+
+<span class="status ${
+    x.status === "Impacted"
+    ? "impacted"
+    : x.status === "Not Impacted"
+    ? "notimpacted"
+    : "unmatched"
+}">
+
+${x.status}
+
+</span>
+
+</td>
+
+</tr>
+
+`
+        )
+        .join("");
+
+
+    if(!rows.length){
+
+        $("tbody").innerHTML = `
+
+<tr>
+
+<td
+    colspan="15"
+    style="
+        text-align:center;
+        padding:28px;
+        color:#667085;
+    "
+>
+
+No records found.
+
+</td>
+
+</tr>
+
+`;
+
+    }
+
+
+    $("countText").textContent =
+        `Showing ${
+            data.length
+            ? start + 1
+            : 0
+        } to ${
+            Math.min(
+                start + pageSize,
+                data.length
+            )
+        } of ${
+            data.length
+        } entries`;
+
+
+    $("pages").innerHTML = "";
+
+
+    for(
+        let i=1;
+        i<=Math.min(
+            totalPages,
+            15
+        );
+        i++
+    ){
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.textContent = i;
+
+
+        if(i === page){
+
+            button.className =
+                "active";
+
+        }
+
+
+        button.onclick =
+            () => {
+
+                page = i;
+
+                render();
+
+            };
+
+
+        $("pages")
+            .appendChild(
+                button
+            );
+
+    }
+
+
+    const titles = {
+
+        all:
+            "Comparison Results",
+
+        impacted:
+            "Impacted Products (MRP needs to be reduced)",
+
+        ok:
+            "Not Impacted Products",
+
+        unmatched:
+            "Unmatched Products",
+
+        proposed:
+            "Proposed Revised MRP"
+
+    };
+
+
+    $("resultTitle")
+        .textContent =
+        titles[activeTab];
+
+}
+
+
+/* =====================================================
+   EXCEL READER
+===================================================== */
+
+async function readExcel(
+    file,
+    type
+){
+
+    const buffer =
+        await file.arrayBuffer();
+
+
+    const workbook =
+        XLSX.read(
+            buffer,
+            {
+                type:"array"
+            }
+        );
+
+
+    if(
+        !workbook.SheetNames.length
+    ){
+
+        throw new Error(
+            "No worksheet found."
+        );
+
+    }
+
+
+    let sheetName =
+        workbook.SheetNames[0];
+
+
+    const sheet =
+        workbook.Sheets[
+            sheetName
+        ];
+
+
+    const rows =
+        XLSX.utils.sheet_to_json(
+            sheet,
+            {
+                header:1,
+                defval:"",
+                raw:true
+            }
+        );
+
+
+    if(!rows.length){
+        return [];
+    }
+
+
+    /*
+       Locate header row
+    */
+
+    let headerIndex = -1;
+
+
+    for(
+        let i=0;
+        i<Math.min(
+            rows.length,
+            20
+        );
+        i++
+    ){
+
+        const text =
+            norm(
+                rows[i].join(" | ")
+            );
+
+
+        if(type === "ceiling"){
+
+            if(
+                text.includes("medicines") &&
+                text.includes(
+                    "dosage form and strength"
+                ) &&
+                text.includes("unit") &&
+                text.includes("ceiling price")
+            ){
+
+                headerIndex = i;
+                break;
+
+            }
+
+        }
+        else{
+
+            if(
+                text.includes("material code") &&
+                text.includes("product name") &&
+                text.includes("pack size") &&
+                text.includes("medicines") &&
+                text.includes(
+                    "dosage form and strength"
+                ) &&
+                text.includes("unit")
+            ){
+
+                headerIndex = i;
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+       Fallback for old Product file.
+    */
+
+    if(headerIndex < 0){
+
+        for(
+            let i=0;
+            i<Math.min(
+                rows.length,
+                20
+            );
+            i++
+        ){
+
+            const text =
+                norm(
+                    rows[i].join(" | ")
+                );
+
+
+            if(type === "product"){
+
+                if(
+                    text.includes("material code") &&
+                    text.includes("product name") &&
+                    text.includes("formulation")
+                ){
+
+                    headerIndex = i;
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    if(headerIndex < 0){
+
+        headerIndex = 0;
+
+    }
+
+
+    const headings =
+        rows[headerIndex]
+        .map(
+            x =>
+                String(x)
+                .replace(/\s+/g," ")
+                .trim()
+        );
+
+
+    const data = [];
+
+
+    for(
+        let i=headerIndex + 1;
+        i<rows.length;
+        i++
+    ){
+
+        const row =
+            rows[i];
+
+
+        if(
+            !row.some(
+                x =>
+                    String(x).trim() !== ""
+            )
+        ){
+
+            continue;
+
+        }
+
+
+        const object = {};
+
+
+        headings.forEach(
+            (heading,index) => {
+
+                if(heading){
+
+                    object[heading] =
+                        row[index] ?? "";
+
+                }
+
+            }
+        );
+
+
+        data.push(object);
+
+    }
+
+
+    /*
+       WPI from Ceiling Price heading.
+
+       Example:
+       Ceiling price
+       (w.e.f. 1.4.2026 with
+       WPI @ 0.64956%)
+    */
+
+    if(type === "ceiling"){
+
+        const topText =
+            rows
+            .slice(
+                0,
+                20
+            )
+            .map(
+                row =>
+                    row.join(" ")
+            )
+            .join(" ");
+
+
+        const patterns = [
+
+            /WPI\s*@\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
+
+            /WPI\s*%\s*([0-9]+(?:\.[0-9]+)?)/i,
+
+            /WPI[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*%/i
+
+        ];
+
+
+        for(
+            const pattern of patterns
+        ){
+
+            const match =
+                topText.match(
+                    pattern
+                );
+
+
+            if(match){
+
+                ceilingWPI =
+                    parseFloat(
+                        match[1]
+                    );
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =====================================================
+   FILE INPUT
+===================================================== */
+
+$("ceilingFile")
+.addEventListener(
+    "change",
+    async function(){
+
+        const file =
+            this.files[0];
+
+
+        if(!file){
+            return;
+        }
+
+
+        try{
+
+            ceilingRows =
+                await readExcel(
+                    file,
+                    "ceiling"
+                );
+
+
+            $("ceilingName")
+                .textContent =
+                file.name;
+
+
+            $("ceilingInfo")
+                .textContent =
+                `Records: ${
+                    ceilingRows.length
+                } | WPI: ${
+                    ceilingWPI
+                }%`;
+
+
+            $("ceilingOk")
+                .innerHTML =
+                `<span class="okIcon">✓</span>`;
+
+
+            $("ceilingPreview")
+                .disabled = false;
+
+        }
+        catch(error){
+
+            console.error(error);
+
+            alert(
+                "Unable to read Ceiling Price Data.\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+$("productFile")
+.addEventListener(
+    "change",
+    async function(){
+
+        const file =
+            this.files[0];
+
+
+        if(!file){
+            return;
+        }
+
+
+        try{
+
+            productRows =
+                await readExcel(
+                    file,
+                    "product"
+                );
+
+
+            $("productName")
+                .textContent =
+                file.name;
+
+
+            $("productInfo")
+                .textContent =
+                `Records: ${
+                    productRows.length
+                } | New 3-column matching fields detected`;
+
+
+            $("productOk")
+                .innerHTML =
+                `<span class="okIcon">✓</span>`;
+
+
+            $("productPreview")
+                .disabled = false;
+
+        }
+        catch(error){
+
+            console.error(error);
+
+            alert(
+                "Unable to read Product-Formulation-MRP.\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   PREVIEW
+===================================================== */
+
+function previewRows(
+    rows,
+    title
+){
+
+    $("modalTitle")
+        .textContent =
+        title;
+
+
+    if(!rows.length){
+
+        $("modalBody").innerHTML =
+            "<p>No data available.</p>";
+
+        $("modal")
+            .classList
+            .remove("hidden");
+
+        return;
+
+    }
+
+
+    const headers =
+        Object.keys(
+            rows[0]
+        );
+
+
+    $("modalBody").innerHTML = `
+
+<table class="previewTable">
+
+<thead>
+
+<tr>
+
+${
+    headers
+    .map(
+        h =>
+            `<th>${esc(h)}</th>`
+    )
+    .join("")
+}
+
+</tr>
+
+</thead>
+
+<tbody>
+
+${
+    rows
+    .slice(0,100)
+    .map(
+        row =>
+            `<tr>${
+                headers
+                .map(
+                    h =>
+                        `<td>${esc(row[h])}</td>`
+                )
+                .join("")
+            }</tr>`
+    )
+    .join("")
+}
+
+</tbody>
+
+</table>
+
+<p
+style="
+color:#667085;
+font-size:12px;
+margin-top:8px;
+"
+>
+Showing first 100 records.
+</p>
+
+`;
+
+
+    $("modal")
+        .classList
+        .remove("hidden");
+
+}
+
+
+$("ceilingPreview")
+.onclick =
+    () =>
+        previewRows(
+            ceilingRows,
+            "Ceiling Price Data Preview"
+        );
+
+
+$("productPreview")
+.onclick =
+    () =>
+        previewRows(
+            productRows,
+            "Product-Formulation-MRP Preview"
+        );
+
+
+function closeModal(){
+
+    $("modal")
+        .classList
+        .add("hidden");
+
+}
+
+
+/* =====================================================
+   EXPORT
+===================================================== */
+
+function exportRow(x){
+
+    return {
+
+        "Sr. No.":
+            x.sr,
+
+        "Material Code":
+            x.code,
+
+        "Product Name":
+            x.product,
+
+        "Pack Size":
+            x.pack,
+
+        "Drug Name":
+            x.drug,
+
+        "Dosage Form & Strength":
+            x.dosage,
+
+        "Unit":
+            x.unit,
+
+        "GST%":
+            x.gst,
+
+        "WPI%":
+            x.wpi,
+
+        "Existing MRP":
+            x.existing,
+
+        "Ceiling Price":
+            x.ceiling,
+
+        "Proposed MRP":
+            x.proposed,
+
+        "Difference ₹":
+            x.status === "Unmatched"
+            ? ""
+            : x.difference,
+
+        "Difference %":
+            x.status === "Unmatched"
+            ? ""
+            : x.differencePct,
+
+        "Status":
+            x.status
+
+    };
+
+}
+
+
+function exportCurrent(){
+
+    const data =
+        getFiltered();
+
+
+    if(!data.length){
+
+        alert(
+            "No data available for export."
+        );
+
+        return;
+
+    }
+
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    const sheet =
+        XLSX.utils.json_to_sheet(
+            data.map(exportRow)
+        );
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        sheet,
+        "Comparison"
+    );
+
+
+    XLSX.writeFile(
+        workbook,
+        "Ceiling-Price-Comparison.xlsx"
+    );
+
+}
+
+
+/* =====================================================
+   FULL REPORT
+===================================================== */
+
+function downloadFullReport(){
+
+    if(!results.length){
+
+        alert(
+            "Please compare the data first."
+        );
+
+        return;
+
+    }
+
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    function addSheet(
+        name,
+        rows
+    ){
+
+        const sheet =
+            XLSX.utils.json_to_sheet(
+                rows.map(exportRow)
+            );
+
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            sheet,
+            name
+        );
+
+    }
+
+
+    addSheet(
+        "All Results",
+        results
+    );
+
+
+    addSheet(
+        "Impacted",
+        results.filter(
+            x =>
+                x.status ===
+                "Impacted"
+        )
+    );
+
+
+    addSheet(
+        "Not Impacted",
+        results.filter(
+            x =>
+                x.status ===
+                "Not Impacted"
+        )
+    );
+
+
+    addSheet(
+        "Unmatched",
+        results.filter(
+            x =>
+                x.status ===
+                "Unmatched"
+        )
+    );
+
+
+    const summary = [
+
+        {
+            Metric:
+                "Total Products",
+            Value:
+                results.length
+        },
+
+        {
+            Metric:
+                "Impacted Products",
+            Value:
+                results.filter(
+                    x =>
+                        x.status ===
+                        "Impacted"
+                ).length
+        },
+
+        {
+            Metric:
+                "Not Impacted Products",
+            Value:
+                results.filter(
+                    x =>
+                        x.status ===
+                        "Not Impacted"
+                ).length
+        },
+
+        {
+            Metric:
+                "Unmatched Products",
+            Value:
+                results.filter(
+                    x =>
+                        x.status ===
+                        "Unmatched"
+                ).length
+        },
+
+        {
+            Metric:
+                "WPI%",
+            Value:
+                ceilingWPI
+        }
+
+    ];
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        XLSX.utils.json_to_sheet(
+            summary
+        ),
+        "Summary"
+    );
+
+
+    XLSX.writeFile(
+        workbook,
+        "Ceiling-Price-Comparison-Full-Report.xlsx"
+    );
+
+}
+
+
+/* =====================================================
+   TABS
+===================================================== */
+
+document
+.querySelectorAll(".tab")
+.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                document
+                .querySelectorAll(".tab")
+                .forEach(
+                    b =>
+                        b.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                this.classList.add(
+                    "active"
+                );
+
+
+                activeTab =
+                    this.dataset.tab;
+
+
+                page = 1;
+
+                render();
+
+            }
+        );
+
+    }
+);
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+$("search")
+.addEventListener(
+    "input",
+    function(){
+
+        page = 1;
+
+        render();
+
+    }
+);
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+function resetAll(){
+
+    if(
+        confirm(
+            "Clear all uploaded files and comparison results?"
+        )
+    ){
+
+        location.reload();
+
+    }
+
+}
+
+
+/* =====================================================
+   INITIAL
+===================================================== */
+
+render();
+
+</script>
+
+</body>
+</html>
