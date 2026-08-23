@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#062b63">
 
-<title>Ceiling Price Data Compare - v3.1</title>
+<title>Ceiling Price Data Compare - v3.3</title>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
@@ -324,7 +324,7 @@ button{
 .data{
     display:table !important;
     width:100%;
-    min-width:2600px;
+    min-width:3050px;
     border-collapse:collapse;
     font-size:12.5px;
 }
@@ -971,6 +971,10 @@ button{
                         <th>Existing MRP</th>
 
                         <th>Ceiling Price</th>
+
+                        <th>MRP as per Ceiling Price</th>
+
+                        <th>MRP as per WPI</th>
 
                         <th>Proposed MRP</th>
 
@@ -2429,6 +2433,10 @@ function render(){
 
             <th>Ceiling Price</th>
 
+            <th>MRP as per Ceiling Price</th>
+
+            <th>MRP as per WPI</th>
+
             <th>Proposed MRP</th>
 
             <th>Difference ₹</th>
@@ -2548,6 +2556,29 @@ function render(){
                     ${
                         x.status === "Unmatched"
                         ? "—"
+                        : "₹ " +
+                          money(
+                              x.mrpCeiling,
+                              decimals
+                          )
+                    }
+                </td>
+
+
+                <!-- 14 -->
+                <td class="right">
+                    ₹ ${money(
+                        x.mrpWPI,
+                        decimals
+                    )}
+                </td>
+
+
+                <!-- 15 -->
+                <td class="right">
+                    ${
+                        x.status === "Unmatched"
+                        ? "—"
                         : `<b>₹ ${
                             money(
                                 x.proposed,
@@ -2558,7 +2589,7 @@ function render(){
                 </td>
 
 
-                <!-- 14 -->
+                <!-- 17 -->
                 <td
                     class="right ${
                         x.difference < 0
@@ -2578,7 +2609,7 @@ function render(){
                 </td>
 
 
-                <!-- 15 -->
+                <!-- 18 -->
                 <td
                     class="right ${
                         x.differencePct < 0
@@ -2597,7 +2628,7 @@ function render(){
                 </td>
 
 
-                <!-- 16 -->
+                <!-- 19 -->
                 <td class="center">
 
                     <span
@@ -2627,7 +2658,7 @@ function render(){
             <tr>
 
                 <td
-                    colspan="16"
+                    colspan="18"
                     style="
                         text-align:center;
                         padding:30px;
@@ -3296,6 +3327,14 @@ function exportRow(x){
         "Ceiling Price":
             x.ceiling,
 
+        "MRP as per Ceiling Price":
+            x.status === "Unmatched"
+            ? ""
+            : x.mrpCeiling,
+
+        "MRP as per WPI":
+            x.mrpWPI,
+
         "Proposed MRP":
             x.proposed,
 
@@ -3597,6 +3636,115 @@ function resetAll(){
 
 render();
 
+</script>
+
+
+<script>
+/* =========================================================
+   SERVICE WORKER REGISTRATION + AUTO-UPDATE
+   Registers sw.js, actively checks for a newer version on
+   every load, and reloads automatically once the new
+   version takes control -- so old cached builds never get
+   stuck showing on this or any future update.
+========================================================= */
+
+if("serviceWorker" in navigator){
+
+    window.addEventListener("load", function(){
+
+        navigator.serviceWorker
+            .register("./sw.js", { updateViaCache:"none" })
+            .then(function(registration){
+
+                /* Force an immediate check against the
+                   server for a newer sw.js, ignoring any
+                   browser HTTP cache of that file. */
+                registration.update();
+
+                /* If a new worker is found while this page
+                   is open, watch it install. */
+                registration.addEventListener(
+                    "updatefound",
+                    function(){
+
+                        const newWorker =
+                            registration.installing;
+
+                        if(!newWorker) return;
+
+                        newWorker.addEventListener(
+                            "statechange",
+                            function(){
+
+                                if(
+                                    newWorker.state === "installed" &&
+                                    navigator.serviceWorker.controller
+                                ){
+
+                                    /* A new version has installed and
+                                       is waiting/activating to replace
+                                       the one currently controlling
+                                       this page -- reload once it takes
+                                       over so the new screen shows
+                                       immediately instead of needing a
+                                       manual clear/uninstall. */
+
+                                    newWorker.addEventListener(
+                                        "statechange",
+                                        function(){
+
+                                            if(newWorker.state === "activated"){
+                                                window.location.reload();
+                                            }
+
+                                        }
+                                    );
+
+                                }
+
+                            }
+                        );
+
+                    }
+                );
+
+            })
+            .catch(function(error){
+
+                console.warn(
+                    "Service worker registration failed:",
+                    error
+                );
+
+            });
+
+        /* Re-check for updates whenever the tab/PWA regains
+           focus, in case a new version was deployed while
+           it was open in the background. */
+        document.addEventListener(
+            "visibilitychange",
+            function(){
+
+                if(document.visibilityState === "visible"){
+
+                    navigator.serviceWorker
+                        .getRegistration()
+                        .then(function(registration){
+
+                            if(registration){
+                                registration.update();
+                            }
+
+                        });
+
+                }
+
+            }
+        );
+
+    });
+
+}
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE = "ceiling-compare-v6";
+const CACHE = "ceiling-compare-v8";
 
 const ASSETS = [
   "./",
