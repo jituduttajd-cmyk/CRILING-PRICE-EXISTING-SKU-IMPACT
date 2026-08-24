@@ -1,0 +1,9 @@
+{
+  "name":"Ceiling Price Data Compare",
+  "short_name":"Ceiling Compare",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f5f7fb",
+  "theme_color":"#062b63",
+  "description":"Compare Product-Formulation-MRP with Ceiling Price Data"
+}
